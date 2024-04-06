@@ -5,6 +5,7 @@ module Lab2 where
 ----------------------------------------------------
 
 import Prelude
+import Data.List (nub)
 
 -- Formalización del lenguaje
 type Var = String
@@ -95,17 +96,28 @@ data Clase = Tau | Contra | Cont | Sat | Fal
 
 filas :: [Var] -> [Fila]
 filas [] = [[]]
-filas (p:ps) = (map ((p, False) :) (filas ps)) ++ (map ((p, True) : ) (filas ps))
+filas (p:ps) = (map ((p, True) :) (filas ps)) ++ (map ((p, False) : ) (filas ps))
 
 
 
 --2.2)
+listarProp :: L -> [Var]
+listarProp (V var) = [var]
+listarProp (Neg f) = listarProp f
+listarProp (Bin f1 _ f2) = nub (listarProp f1 ++ listarProp f2)
+
+tvAux :: L -> Fila -> (Fila, Bool)
+tvAux f fila = (fila, eval (creari fila) f)
+
 tv :: L -> TV
-tv = undefined
+tv f = map (tvAux f) (filas (listarProp f))
 
 --2.3)
+
+
 es :: L -> Clase -> Bool
 es = undefined
+
 
 --2.4)
 -- Completar con tautología/contingencia/contradicción:
