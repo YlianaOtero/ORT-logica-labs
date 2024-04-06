@@ -113,18 +113,28 @@ tv :: L -> TV
 tv f = map (tvAux f) (filas (listarProp f))
 
 --2.3)
+extraerValoresTV :: TV -> [Bool]
+extraerValoresTV [] = []
+extraerValoresTV ((_, b):xs) = b : extraerValoresTV xs
 
+todosBooleanosIguales :: [Bool] -> Bool -> Bool
+todosBooleanosIguales [] _ = True
+todosBooleanosIguales (x:xs) b = x == b && todosBooleanosIguales xs b
 
 es :: L -> Clase -> Bool
-es = undefined
+es f Tau = todosBooleanosIguales (extraerValoresTV (tv f)) True
+es f Contra = todosBooleanosIguales (extraerValoresTV (tv f)) False
+es f Cont = not (todosBooleanosIguales (extraerValoresTV (tv f)) True) && not (todosBooleanosIguales (extraerValoresTV (tv f)) False)
+es f Sat = not (todosBooleanosIguales (extraerValoresTV (tv f)) False)
+es f Fal = not (todosBooleanosIguales (extraerValoresTV (tv f)) True)
 
 
 --2.4)
 -- Completar con tautología/contingencia/contradicción:
--- fa es ...
--- fb es ...
--- fc es ...
--- fd es ...
+-- fa es contingencia
+-- fb es contingencia
+-- fc es tautología
+-- fd es contradicción
 
 --2.5) 
 fnc :: L -> L

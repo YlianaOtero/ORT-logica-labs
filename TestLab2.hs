@@ -309,7 +309,7 @@ fncTests = [TestLabel "FNC 1"  f1_fnc_ok,
 
 -- Todas las pruebas 
 allTests = TestList $ evalTests ++ creariTests ++ filasTests ++ tvTests ++ esTests ++ fncTests
-test0 = TestList $ evalTests ++ creariTests ++ filasTests ++ tvTests
+test0 = TestList $ evalTests ++ creariTests ++ filasTests ++ tvTests ++ esTests 
 
 -- Formulas
 raz1 = p 
