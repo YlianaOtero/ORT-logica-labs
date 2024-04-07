@@ -138,7 +138,20 @@ es f Fal = not (todosBooleanosIguales (extraerValoresTV (tv f)) True)
 
 --2.5) 
 fnc :: L -> L
-fnc = undefined
+fnc f = conjuncionDeDisyunciones (tablaDeVerdadFalsas (tv f))
+
+tablaDeVerdadFalsas :: TV -> [Fila]
+tablaDeVerdadFalsas tv = [fila | (fila, val) <- tv, not val]
+
+conjuncionDeDisyunciones :: [Fila] -> L
+conjuncionDeDisyunciones [] = error "Es una Tautologia"
+conjuncionDeDisyunciones [fila] = disyuncionDeVariables fila
+conjuncionDeDisyunciones (fila:filas) = Bin (disyuncionDeVariables fila) And (conjuncionDeDisyunciones filas)
+
+disyuncionDeVariables :: Fila -> L
+disyuncionDeVariables [] = error "Fila vacía"
+disyuncionDeVariables [(var, valor)] = if valor then Neg (V var) else V var
+disyuncionDeVariables ((var, valor):xs) = Bin (if valor then Neg (V var) else V var) Or (disyuncionDeVariables xs)
 
 
 ----------------------------------------------------------------------------------
