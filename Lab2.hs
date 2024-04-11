@@ -1,7 +1,7 @@
 module Lab2 where
 ------------------- Estudiante/s -------------------
--- Nombres y apellidos: 
--- Números: 
+-- Nombres y apellidos: Yliana Otero, 
+-- Números: 301178, 
 ----------------------------------------------------
 
 import Prelude
