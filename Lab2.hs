@@ -1,7 +1,7 @@
 module Lab2 where
 ------------------- Estudiante/s -------------------
--- Nombres y apellidos: Yliana Otero, 
--- Números: 301178, 
+-- Nombres y apellidos: Yliana Otero, Joaquin Villanueva
+-- Números: 301178, 283473
 ----------------------------------------------------
 
 import Prelude
@@ -137,19 +137,19 @@ es f Fal = not (todosBooleanosIguales (extraerValoresTV (tv f)) True)
 -- fd es contradicción
 
 --2.5) 
-fnc :: L -> L
+fnc :: L -> L --Usamos el metodo del practico
 fnc f = conjuncionDeDisyunciones (tablaDeVerdadFalsas (tv f))
 
 tablaDeVerdadFalsas :: TV -> [Fila]
 tablaDeVerdadFalsas tv = [fila | (fila, val) <- tv, not val]
 
 conjuncionDeDisyunciones :: [Fila] -> L
-conjuncionDeDisyunciones [] = error "Es una Tautologia"
+conjuncionDeDisyunciones [] = Bin (V "x") Or (Neg (V "x"))  -- Tautologia, "x" cualquiera
 conjuncionDeDisyunciones [fila] = disyuncionDeVariables fila
 conjuncionDeDisyunciones (fila:filas) = Bin (disyuncionDeVariables fila) And (conjuncionDeDisyunciones filas)
 
 disyuncionDeVariables :: Fila -> L
-disyuncionDeVariables [] = error "Fila vacía"
+disyuncionDeVariables [] = error "Fila vacía" --No deberia ocurrir
 disyuncionDeVariables [(var, valor)] = if valor then Neg (V var) else V var
 disyuncionDeVariables ((var, valor):xs) = Bin (if valor then Neg (V var) else V var) Or (disyuncionDeVariables xs)
 
