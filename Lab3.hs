@@ -106,7 +106,13 @@ construyeTableau (x:xs) i =
 -- Pre: recibe una fórmula f de LP
 -- Pos: retorna True si y solo si f es sat
 sat :: L -> Bool
-sat = undefined
+sat f = verificaSat (tableau f)
+
+-- Auxiliar
+verificaSat :: Tableau -> Bool
+verificaSat (Hoja i) = esConsistente i
+verificaSat (Conj _ t) = verificaSat t
+verificaSat (Dis _ t1 t2) = verificaSat t1 || verificaSat t2
 
 -- 5)
 -- Pre: recibe una fórmula f de LP
