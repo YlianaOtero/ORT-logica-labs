@@ -66,41 +66,29 @@ literal2f (v, False) = Neg (V v)
 tableau :: L -> Tableau
 tableau f = construyeTableau [f] []
 
---Construye el Tableau recursivo
+--Funcion recursiva que acumula los resultados de aplicar las reglas de teablau
+--Se le pasa una lista vacia donde se guardan las formulas
 construyeTableau :: [L] -> I -> Tableau
 
-construyeTableau [] i = Hoja i  --No hay más para procesar, se crea una hoja
+construyeTableau [] i = Hoja i
 
 construyeTableau (x:xs) i =
   case x of
-    V var -> if esConsistente ((var, True) : i)
-             then construyeTableau xs ((var, True) : i)
-             else Hoja i  --Hay una Inconsistencia, se termina la rama
-    Neg (V var) -> if esConsistente ((var, False) : i)
-                   then construyeTableau xs ((var, False) : i)
-                   else Hoja i  --Hay una Inconsistencia, se termina la rama
-    Bin p And q -> construyeTableau (p:q:xs) i  -- Se expande el AND agregando ambas subfórmulas
-    Bin p Or q -> Dis [x] (construyeTableau (p:xs) i) (construyeTableau (q:xs) i)  -- Se expande el OR en dos ramas con Dis segun la regla
-    Bin p Imp q -> construyeTableau (Bin (Neg p) Or q : xs) i  --p Imp q equivale a ¬p∨q
-    Bin p Iff q -> Dis [x] (construyeTableau (Bin p And q : xs) i) (construyeTableau (Bin (Neg p) And (Neg q) : xs) i) --p Iff q equivale a (p∧q)∨(¬p∧¬q)
+    V var -> 
+      construyeTableau xs ((var, True) : i)
+    Neg (V var) -> 
+      construyeTableau xs ((var, False) : i)
     
-    Neg (Neg p) -> construyeTableau (p:xs) i  -- Doble negación
-    Neg (Bin p And q) -> construyeTableau (Bin (Neg p) Or (Neg q) : xs) i  -- De Morgan
-    Neg (Bin p Or q) -> construyeTableau (Bin (Neg p) And (Neg q) : xs) i  -- De Morgan
-    Neg (Bin p Imp q) -> construyeTableau (Bin p And (Neg q) : xs) i  
-    Neg (Bin p Iff q) -> construyeTableau (Bin (Bin p And (Neg q)) Or (Bin (Neg p) And q) : xs) i
+    --Reglas conjuntivas
+    Bin p And q -> Conj [x] (construyeTableau (p:q:xs) i)
+    Neg (Neg p) -> construyeTableau (p:xs) i --Doble negacion
+    Neg (Bin p Or q) -> construyeTableau (Neg p:Neg q:xs) i
+    Neg (Bin p Imp q) -> construyeTableau (p:Neg q:xs) i
 
---tableau (V p) = Hoja [(p, True)] --Literal
---tableau (Neg (Neg (V p))) = Hoja [(p, True)] --Doble Negacion
---tableau (Neg (V p)) = Hoja [(p, False)] --Negacion
---tableau (Neg (Bin izq Or der)) = Conj [Neg izq, Neg der] (tableau (Bin (Neg izq) And (Neg der))) --Negacion de la disyuncion
---tableau (Neg (Bin izq And der)) = Dis [Neg izq, Neg der] (tableau (Neg izq)) (tableau (Neg der)) --Negacion de la conjuncion
---tableau (Neg (Bin izq Imp der)) = Conj [izq, Neg der] (tableau (Bin izq And (Neg der))) --Negacion de la implicacion
---tableau (Bin izq Or der) = Dis [izq, der] (tableau (izq)) (tableau (der)) --Disyuncion
---tableau (Bin izq Imp der) = Dis [Neg izq, der] (tableau (Neg izq)) (tableau (der)) --Implicacion
---tableau (Neg (Bin izq Iff der)) = Dis [Neg izq, der] tableau 
---tableau (Bin izq And der) = Conj [izq, der] (tableau (Bin (tableau izq) And (tableau der)))
---tableau (Bin izq Iff der) = Dis [izq, der] 
+    --Reglas disyuntivas
+    Bin p Or q -> Dis [x] (construyeTableau (p:xs) i) (construyeTableau (q:xs) i)
+    Bin p Imp q -> Dis [x] (construyeTableau (Neg p:xs) i) (construyeTableau (q:xs) i)
+    Neg (Bin p And q) -> Dis [x] (construyeTableau (Neg p:xs) i) (construyeTableau (Neg q:xs) i)
 
 -- 4)
 -- Pre: recibe una fórmula f de LP
