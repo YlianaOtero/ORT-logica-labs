@@ -44,7 +44,7 @@ fContra = Bin (V "p") And (Neg (V "p"))
 f1 = Bin (V "p") Imp (V "q")
 f2 = Neg (f1)
 f3 = Bin (Bin (V "p") Or (V "q")) And (Bin (Neg (V "p")) Imp (Neg (V "q")))
-f4 = Neg (f2)
+f4 = Neg (f3)
 
 
 
@@ -156,12 +156,12 @@ clasificar f = case (sat f, sat (Neg f)) of
 -- Pos: retorna la consecuencia expresada como una fórmula de LP
 cons2f :: Consecuencia -> L
 cons2f ([] :|= conc) = conc
-cons2f (prem :|= conc) = Bin (listaDeForm2ConjDeForm (prem)) Imp (conc)
+cons2f (prem :|= conc) = Bin (conjuncionDeFormulas (prem)) Imp (conc)
 
-listaDeForm2ConjDeForm :: [L] -> L
-listaDeForm2ConjDeForm [] = error "No se puede convertir una lista vacía"
-listaDeForm2ConjDeForm [p] = p
-listaDeForm2ConjDeForm (p:ps) = Bin p And (listaDeForm2ConjDeForm ps)
+conjuncionDeFormulas :: [L] -> L
+conjuncionDeFormulas [] = error "No se puede convertir una lista vacía"
+conjuncionDeFormulas [p] = p
+conjuncionDeFormulas (p:ps) = Bin p And (conjuncionDeFormulas ps)
 
 
 -- 8)     
@@ -169,48 +169,42 @@ listaDeForm2ConjDeForm (p:ps) = Bin p And (listaDeForm2ConjDeForm ps)
 -- Pos: retorna True si y solo si la consecuencia es válida
 valida :: Consecuencia -> Bool
 valida ([] :|= _) = True
-valida (prem :|= conc) = not (sat (Bin (listaDeForm2ConjDeForm prem) And (Neg conc)))
-
--- esCerrado :: Tableau -> Bool
--- esCerrado (Hoja i) = not (esConsistente i)
--- esCerrado (Conj _ t) = esCerrado t
--- esCerrado (Dis _ t1 t2) = esCerrado t1 && esCerrado t2
+valida (prem :|= conc) = not (sat (Bin (conjuncionDeFormulas prem) And (Neg conc)))
     
-
 
 -- 9)
 -- Pre: recibe una fórmula f de LP
 -- Pos: retorna f en FND
 fnd :: L -> L
-fnd f = listaDeForm2DisDeForm (listaDeInt2ListaDeForm (modelos f))
+fnd f = disyuncionDeFormulas (int2ConjuncionDeFormulas (modelos f))
 
-listaDeInt2ListaDeForm :: [I] -> [L]
-listaDeInt2ListaDeForm [] = []
-listaDeInt2ListaDeForm (i:is) = int2f i : listaDeInt2ListaDeForm is
+int2ConjuncionDeFormulas :: [I] -> [L]
+int2ConjuncionDeFormulas [] = []
+int2ConjuncionDeFormulas (i:is) = int2f i : int2ConjuncionDeFormulas is
 
-listaDeForm2DisDeForm :: [L] -> L
-listaDeForm2DisDeForm [] = error "No se puede convertir una lista vacía"
-listaDeForm2DisDeForm [p] = p
-listaDeForm2DisDeForm (p:ps) = Bin p Or (listaDeForm2DisDeForm ps)
+disyuncionDeFormulas :: [L] -> L
+disyuncionDeFormulas [] = error "No se puede convertir una lista vacía"
+disyuncionDeFormulas [p] = p
+disyuncionDeFormulas (p:ps) = Bin p Or (disyuncionDeFormulas ps)
 
 
 -- 10)
 -- Pre: recibe una fórmula f de LP
 -- Pos: retorna f en FNC
 fnc :: L -> L
-fnc f = listaDeForm2ConjDeForm (listaDeInt2ListaDeFormAlt (modelos (Neg f)))
+fnc f = conjuncionDeFormulas (int2DisyuncionDeFormulas (invertirInts (modelos (Neg f))))
 
-int2fAlt :: I -> L
-int2fAlt [x] = literal2f x
-int2fAlt (x:xs) = Bin (literal2f x) Or (int2f xs)
+int2DisyuncionDeFormulas :: [I] -> [L]
+int2DisyuncionDeFormulas [] = []
+int2DisyuncionDeFormulas (i:is) = int2fDisyuntivo i : int2DisyuncionDeFormulas is
 
-listaDeInt2ListaDeFormAlt :: [I] -> [L]
-listaDeInt2ListaDeFormAlt [] = []
-listaDeInt2ListaDeFormAlt (i:is) = int2fAlt i : listaDeInt2ListaDeFormAlt is
+int2fDisyuntivo :: I -> L
+int2fDisyuntivo [x] = literal2f x
+int2fDisyuntivo (x:xs) = Bin (literal2f x) Or (int2f xs)
 
 invertirInts :: [I] -> [I]
 invertirInts [] = []
-invertirInts (i:is) = invertirInt i : invertirInts is
+invertirInts (i:is) = (invertirInt i) : (invertirInts is)
 
 invertirInt :: I -> I
 invertirInt [] = []
