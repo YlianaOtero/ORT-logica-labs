@@ -124,20 +124,22 @@ verificaSat (Dis _ t1 t2) = verificaSat t1 || verificaSat t2
 -- Recomendación: para imprimirlos los modelos en lineas distintas:
 --                ghci> mapM_ print $ modelos f
 modelos :: L -> [I]
-modelos f = nub . concatMap completar . filter esConsistente $ hojas (tableau f) --Se filtran las hojas que son consistentes
---nub: elimina duplicados
---concatMap: aplica "completar" a cada elemento de una lista y concatena los resultados
+modelos f = nub . concatMap completar . filter esConsistente $ hojas (tableau f)
   where
-    vs = vars f --Funcion auxliar dada que obtiene las variables unicas de la formula
-    hojas (Hoja i) = [i] 
-    hojas (Conj _ t) = hojas t --Conjuncion
-    hojas (Dis _ t1 t2) = hojas t1 ++ hojas t2 --Disyuncion
-    completar i = completarModelo i (vs \\ map fst i) --Filtra solo las variables comparando las listas
-    --fst (x, y) = x
+    vs = vars f
+    hojas (Hoja i) = [limpiar i]
+    hojas (Conj _ t) = hojas t
+    hojas (Dis _ t1 t2) = hojas t1 ++ hojas t2
+    completar i = completarModelo i (vs \\ map fst i)
 
---Se generan todas las combinaciones de verdadero/falso para las variables que faltan en la interpretación
+-- Función para limpiar duplicados en una interpretación
+limpiar :: I -> I
+limpiar [] = []
+limpiar (x:xs) = x : limpiar (filter (\y -> fst y /= fst x) xs)
+
+-- Se generan todas las combinaciones de verdadero/falso para las variables que faltan en la interpretación
 completarModelo :: I -> [Var] -> [I]
-completarModelo i vars = map (i ++) (combinaciones vars) --Une cada combinación generada a la i
+completarModelo i vars = map (i ++) (combinaciones vars)
   where
     combinaciones [] = [[]]
     combinaciones (v:vs) = [ (v, True) : r | r <- combinaciones vs] ++ [ (v, False) : r | r <- combinaciones vs]
