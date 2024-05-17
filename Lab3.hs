@@ -1,11 +1,11 @@
-module Lab3Solution where
+module Lab3 where
 ------------------- Estudiante/s -------------------
 -- Nombres y apellidos: Yliana Otero, Joaquin Villanueva
 -- Números: 301178, 283473
 ----------------------------------------------------
 
 import Prelude
-import Data.List
+import Data.List ( (\\), nub )
 import Data.Maybe
 
 ----------------------------------------------------------------------------------
