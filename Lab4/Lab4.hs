@@ -1,6 +1,6 @@
 ------------------- Estudiante/s -------------------
--- Nombres y apellidos: 
--- Números: 
+-- Nombres y apellidos: Yliana Otero, Joaquin Villanueva
+-- Números: 301178, 283473
 ----------------------------------------------------
 
 import Prelude
@@ -29,10 +29,14 @@ ej1 :: L
 ej1 = Bin diceAej1 And diceBej1
 
 -- "Todos somos escuderos"
-diceAej1 = Bin a Iff (Bin (Bin (Neg a) And (Neg b)) And (Neg c))
+--diceAej1 = Bin a Iff (Bin (Bin (Neg a) And (Neg b)) And (Neg c))
+diceAej1 = Bin a Iff (Neg (Bin a Or b Or c))
 
 -- "Solo uno de nosotros es caballero"
-diceBej1 = Bin b Iff (Bin (Bin (Bin a And (Bin (Neg b) And (Neg c))) Or (Bin b And (Bin (Neg a) And (Neg b)))) Or (Bin c And (Bin (Neg a) And (Neg b))))
+--diceBej1 = Bin b Iff (Bin (Bin (Bin a And (Bin (Neg b) And (Neg c))) Or (Bin b And (Bin (Neg a) And (Neg b)))) Or (Bin c And (Bin (Neg a) And (Neg b))))
+diceBej1 = Bin b Iff ((Bin a And (Neg b) And (Neg c)) Or
+                     (Bin (Neg a) And b And (Neg c)) Or
+                     (Bin (Neg a) And (Neg b) And c))
 
 -- Respuesta: ...
 ej2 :: L
