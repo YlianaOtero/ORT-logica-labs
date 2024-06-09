@@ -105,6 +105,8 @@ construyeTableau (x:xs) i =
     Bin p Or q -> Dis [x] (construyeTableau (p:xs) i) (construyeTableau (q:xs) i)
     Bin p Imp q -> Dis [x] (construyeTableau (Neg p:xs) i) (construyeTableau (q:xs) i)
     Neg (Bin p And q) -> Dis [x] (construyeTableau (Neg p:xs) i) (construyeTableau (Neg q:xs) i)
+    Bin p Iff q -> Dis [x] (Conj [] (construyeTableau (p:q:xs) i)) (Conj [] (construyeTableau (Neg p:Neg q:xs) i))
+    Neg (Bin p Iff q) -> Dis [x] (Conj [] (construyeTableau (p:Neg q:xs) i)) (Conj [] (construyeTableau (Neg p:q:xs) i))
 
 -- 4)
 -- Pre: recibe una fórmula f de LP

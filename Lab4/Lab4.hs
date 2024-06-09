@@ -29,14 +29,16 @@ ej1 :: L
 ej1 = Bin diceAej1 And diceBej1
 
 -- "Todos somos escuderos"
---diceAej1 = Bin a Iff (Bin (Bin (Neg a) And (Neg b)) And (Neg c))
-diceAej1 = Bin a Iff (Neg (Bin a Or b Or c))
+diceAej1 = Bin a Iff (Neg (Bin (Bin a Or b) Or c))
 
 -- "Solo uno de nosotros es caballero"
---diceBej1 = Bin b Iff (Bin (Bin (Bin a And (Bin (Neg b) And (Neg c))) Or (Bin b And (Bin (Neg a) And (Neg b)))) Or (Bin c And (Bin (Neg a) And (Neg b))))
-diceBej1 = Bin b Iff ((Bin a And (Neg b) And (Neg c)) Or
-                     (Bin (Neg a) And b And (Neg c)) Or
-                     (Bin (Neg a) And (Neg b) And c))
+diceBej1 = Bin b Iff (Bin (Bin (Bin a And (Bin (Neg b) And (Neg c))) Or (Bin b And (Bin (Neg a) And (Neg b)))) Or (Bin c And (Bin (Neg a) And (Neg b))))
+
+--Una interpretacion posible: modelos ej1
+--[("c", False), ("b", False), ("a", True)] 
+--A es caballero, B y C son escuderos. 
+--Esto cumple con B, que miente sobre que solo uno es caballero 
+--(ya que hay uno que es caballero, A).
 
 -- Respuesta: ...
 ej2 :: L
@@ -48,6 +50,10 @@ diceAej2 = Bin a Iff (Bin (Bin (Neg a) And (Neg b)) And (Neg c))
 -- "Solo uno de nosotros es escudero"
 diceBej2 = Bin b Iff (Bin (Bin (Bin (Neg a) And (Bin b And c)) Or (Bin (Neg b) And (Bin a And b))) Or (Bin (Neg c) And (Bin a And b)))
 
+--Similar al anterior, una interpretacion que devuelve modelos ej2:
+--[("c", True), ("b", True), ("a", False)] 
+--A es escudero, B y C son caballeros. 
+--B miente diciendo que solo uno es escudero, cuando hay uno.
 
 -- Respuesta: ...
 ej3 :: L
@@ -63,6 +69,11 @@ diceBej3 = Bin b Iff (Bin (Neg a) And a) --Contradiccion
 
 -- "B está mintiendo"
 diceCej3 = Bin c Iff (Neg b)
+
+--Ejecutando modelos ej3, una interpretacion posible es:
+--[("b", False), ("c", True), ("a", True)] 
+--A y C son caballeros; B es escudero y miente sobre lo que A dijo.
+
 ----------------------------------------------------------------------------------
 -- 2. Planificación de vigilancia
 ----------------------------------------------------------------------------------
