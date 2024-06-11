@@ -127,8 +127,8 @@ condB nr nz nt = bigAnd [j | j <- [1..nz]] (\j -> bigAnd [k | k <- [1..nt]] (\k 
 -- Condicion extra: Un robot solo puede vigilar una zona en una franja temporal. Esto podemos usarlo si vemos que al final un robot NO puede
 -- vigilar más de una zona en una misma franja temporal... Pero agregar esta condición a planAB hace que el ejercicio 2.4 no tenga sentido
 -- porque planAB 3 4 5 sería insatisfacible... (REVISAR)
-condC :: Nat -> Nat -> Nat -> L
-condC nr nz nt = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [j | j <- [1..nz]] (\j -> bigAnd [k | k <- [1..nt]] (\k -> bigAnd [l | l <- [1..nt], l /= k] (\l -> Bin (Neg (v3 "p" i j k)) And (Neg (v3 "p" i j l))))))
+-- condExtra :: Nat -> Nat -> Nat -> L
+-- condExtra nr nz nt = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [j | j <- [1..nz]] (\j -> bigAnd [k | k <- [1..nt]] (\k -> bigAnd [l | l <- [1..nt], l /= k] (\l -> Bin (Neg (v3 "p" i j k)) And (Neg (v3 "p" i j l))))))
 
 planAB :: Nat -> Nat -> Nat -> L
 planAB nr nz nt = Bin (condA nr nz nt) And (condB nr nz nt)
@@ -146,19 +146,38 @@ planAB nr nz nt = Bin (condA nr nz nt) And (condB nr nz nt)
 --        ir - información de rendimiento para cada robot
 --        iz - información de importancia para cada zona
 -- Pos: retorna una fórmula de LP formalizando el problema de planificacion extendida.
+
+
+-- Paso 1: Ordenar robots y zonas por rendimiento e importancia respectivamente.
+-- Paso 2: Asignar robots a zonas de acuerdo a su rendimiento e importancia.
+-- Paso 3: Formalizar la asignación de robots a zonas en una fórmula de LP en planABC
+
 planABC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
-planABC nr nz nt ir iz = undefined
+planABC nr nz nt ir iz = Bin (Bin (condA nr nz nt) And (condB nr nz nt)) And (condC nr nz nt (sortTuple ir) (sortTuple iz))
 
+-- Ordena de forma descendente por importancia o rendimiento. 
+sortTuple :: [(Nat,Nat)] -> [(Nat,Nat)]
+sortTuple [] = []
+sortTuple (x:xs) = sortBy (\(_,a) (_,b) -> compare b a) (x:xs)
 
+-- Condicion C: Asignar robots a zonas de acuerdo a su rendimiento e importancia. 
+-- ir y iz son listas de tuplas (Nat,Nat) donde el primer elemento es el índice del robot/zona y el segundo elemento es el rendimiento/importancia, y
+-- están ordenadas de forma descendente por rendimiento/importancia.
+condC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
+-- condC nr nz nt ir iz = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [k | k <- [1..nt]] (\k -> bigOr [j | j <- [1..nz]] (\j -> v3 "p" i j k)))
+
+condC nr nz nt ir iz = bigAnd [1..nt] $ \k -> bigAnd [1..min nr nz] $ \n -> let (i, _) = ir !! (n - 1)
+                                                                                (j, _) = iz !! (n - 1)
+                                                                            in v3 "p" i j k
 
 -- 2.6)
 -- Información de rendimiento:
 infoRobots :: [(Nat,Nat)]
-infoRobots = undefined
+infoRobots = [(1, 200), (2, 150), (3, 100)]
 
 -- Información de importancia:
 infoZonas :: [(Nat,Nat)]
-infoZonas = undefined
+infoZonas = [(1, 100), (2, 230), (3, 100)]
 
 -- Graficar solución en la imagen planABC.png.
 
