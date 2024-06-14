@@ -73,22 +73,18 @@ diceCej3 = Bin c Iff (Neg b)
 --Ejecutando modelos ej3, una interpretacion posible es:
 --[("b", False), ("c", True), ("a", True)] 
 --A y C son caballeros; B es escudero y miente sobre lo que A dijo.
-
+ 
 ----------------------------------------------------------------------------------
 -- 2. Planificación de vigilancia
 ----------------------------------------------------------------------------------
 
--- Para garantizar la seguridad en grandes espacios de manera eficiente han surgido sistemas de vigilancia auto ́nomos con los cuales vigilantes de seguridad robotizados (de aqu ́ı en m ́as, robots) se ocupan de la proteccio ́n perimetral patrullando sin ayuda humana y detectando objetos, actividades o incluso temperat- uras an ́omalas.2 La efectividad de estos sistemas de vigilancia depende, en parte, de una planificaci ́on apropiada entre los distintos robots disponibles y las distintas zonas a vigilar.
--- En este ejercicio nos interesa modelar los posibles escenarios de un sistema de vigilancia que consiste en r robots, z zonas de vigilancia y t franjas temporales. Dichos valores conforman los para ́metros del problema. Por ejemplo, si tenemos r = 2, z = 2 y t = 4, las figuras 1 y 2 nos muestran dos de las posibles planificaciones de vigilancia en la cual se cumplen las siguientes condiciones obviamente deseables:
--- A. Todo robot en cualquier momento vigila alguna zona. B. Nunca asignamos m ́as de un robot en la misma zona.
-
 -- 2.1) Respuesta: ...
 
--- i)
+-- i) r > z
 -- No. No es posible realizar una planificación básica con más robots que zonas de vigilancia. 
--- Una planificación básica requiere que cada robot vigile exactamente una zona de vigilancia. Si hay más robots que zonas de vigilancia,
--- habrá robots que no tengan zonas asignadas, o robots que tengan más de una zona asignada, lo cual no es posible en una planificación básica.
-
+-- Una planificación básica requiere que cada robot vigile exactamente una zona de vigilancia en una franja temporal. 
+-- Si hay más robots que zonas de vigilancia, habrá robots que no tengan zonas asignadas, o robots que tengan más de 
+-- una zona asignada en una franja temporal, lo cual no es posible en una planificación básica.
 
 -- CONFLICTO:
 -- Si hay más robots que zonas de vigilancia, habrá robots que no tengan zonas asignadas, o robots que tengan más de una zona asignada en una misma franja temporal.
@@ -98,8 +94,8 @@ diceCej3 = Bin c Iff (Neg b)
 -- no habría nada para graficar....
 
 
--- RESPUESTAS ANTERIORES (revisar)
--- ii)
+-- (REVISAR)
+-- ii) r < z
 -- Sí. Es posible realizar una planificación básica con más zonas de vigilancia que robots.
 -- En una planificación básica, cada robot debe vigilar una zona de vigilancia. Si hay más zonas de vigilancia que robots,
 -- habrá robots vigilando más de una zona de vigilancia en una misma franja temporal. (REVISAR)
@@ -164,7 +160,6 @@ sortTuple (x:xs) = sortBy (\(_,a) (_,b) -> compare b a) (x:xs)
 -- ir y iz son listas de tuplas (Nat,Nat) donde el primer elemento es el índice del robot/zona y el segundo elemento es el rendimiento/importancia, y
 -- están ordenadas de forma descendente por rendimiento/importancia.
 condC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
--- condC nr nz nt ir iz = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [k | k <- [1..nt]] (\k -> bigOr [j | j <- [1..nz]] (\j -> v3 "p" i j k)))
 
 condC nr nz nt ir iz = bigAnd [1..nt] $ \k -> bigAnd [1..min nr nz] $ \n -> let (i, _) = ir !! (n - 1)
                                                                                 (j, _) = iz !! (n - 1)
@@ -222,7 +217,7 @@ maxkClique g@(n,e) k = undefined
 bigAnd :: [Int] -> (Int -> L) -> L
 bigAnd [i] f = f i
 bigAnd (i:is) f = Bin (f i) And (bigAnd is f)
-
+-- Recibe una lista de Int, una funcion de Int a L, 
 
 -- Disyuntoria (existencial finito) de fórmulas indexadas
 bigOr :: [Int] -> (Int -> L) -> L
