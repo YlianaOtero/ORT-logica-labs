@@ -13,6 +13,8 @@ type Nat = Int
 ----------------------------------------------------------------------------------
 -- 1. Veraces y mentirosos
 ----------------------------------------------------------------------------------
+-- OBSERVACION: para poder hacer este ejercicio, tuvimos que corregir algunos errores que encontramos en el Lab3.
+-- En esta entrega se adjunta tambien nuestro Lab3 con dichas correcciones.
 
 -- Variables proposicionales:
 -- ...
@@ -77,12 +79,7 @@ diceCej3 = Bin c Iff (Neg b)
 ----------------------------------------------------------------------------------
 -- 2. Planificación de vigilancia
 ----------------------------------------------------------------------------------
-
--- Para garantizar la seguridad en grandes espacios de manera eficiente han surgido sistemas de vigilancia auto ́nomos con los cuales vigilantes de seguridad robotizados (de aqu ́ı en m ́as, robots) se ocupan de la proteccio ́n perimetral patrullando sin ayuda humana y detectando objetos, actividades o incluso temperat- uras an ́omalas.2 La efectividad de estos sistemas de vigilancia depende, en parte, de una planificaci ́on apropiada entre los distintos robots disponibles y las distintas zonas a vigilar.
--- En este ejercicio nos interesa modelar los posibles escenarios de un sistema de vigilancia que consiste en r robots, z zonas de vigilancia y t franjas temporales. Dichos valores conforman los para ́metros del problema. Por ejemplo, si tenemos r = 2, z = 2 y t = 4, las figuras 1 y 2 nos muestran dos de las posibles planificaciones de vigilancia en la cual se cumplen las siguientes condiciones obviamente deseables:
--- A. Todo robot en cualquier momento vigila alguna zona. B. Nunca asignamos m ́as de un robot en la misma zona.
-
--- 2.1) Respuesta: ...
+-- 2.1) Respuestas: ...
 
 -- i)
 -- No. No es posible realizar una planificación básica con más robots que zonas de vigilancia. 
@@ -105,31 +102,50 @@ diceCej3 = Bin c Iff (Neg b)
 --        nz - número de zonas de vigilancia
 --        nt - número de franjas temporales
 -- Pos: retorna una fórmula de LP formalizando el problema de planificacion básica.
-
--- Condicion A: Todo robot en cualquier momento vigila una y solo una zona.
-condA :: Nat -> Nat -> Nat -> L
-condA nr nz nt = bigAnd [1..nr] (\robot -> bigAnd [1..nt] (\tiempo -> aplicarEnUnaUnicaZona nz (\zona -> v3 "p" robot zona tiempo)))
-
-aplicarEnUnaUnicaZona :: Nat -> (Nat -> L) -> L
-aplicarEnUnaUnicaZona nz f = Bin (bigOr [1..nz] f) And (bigAnd [zona1 | zona1 <- [1..nz]] (\zona1 -> bigAnd [zona2 | zona2 <- [1..nz], zona2 > zona1] (\zona2 -> Bin (Neg (f zona1)) Or (Neg (f zona2)))))
-
-
--- Condicion B: No existe más de un robot en la misma zona en una misma franja temporal.
-condB :: Nat -> Nat -> Nat -> L
-condB nr nz nt = bigAnd [1..nz] (\zona -> bigAnd [1..nt] (\tiempo -> noHayMasDeUnRobot nr zona tiempo))
-
-noHayMasDeUnRobot :: Nat -> Nat -> Nat -> L
-noHayMasDeUnRobot nr zona tiempo = 
-    bigAnd [1..nr] (\robot1 -> 
-    bigAnd [robot2 | robot2 <- [1..nr], robot2 /= robot1] (\robot2 -> 
-    Bin (Neg (v3 "p" robot1 zona tiempo)) Or (Neg (v3 "p" robot2 zona tiempo))
-    ))
-
 planAB :: Nat -> Nat -> Nat -> L
 planAB nr nz nt = Bin (condA nr nz nt) And (condB nr nz nt)
 
+-- Condición A: Todo robot en cualquier momento vigila una y solo una zona.
+condA :: Nat -> Nat -> Nat -> L
+condA nr nz nt = bigAnd [1..nr] (\robot -> bigAnd [1..nt] (\tiempo -> asignarRobotAUnaZona nz (\zona -> v3 "p" robot zona tiempo)))
+
+-- Condición B: No existe más de un robot en la misma zona en una misma franja temporal.
+condB :: Nat -> Nat -> Nat -> L
+condB nr nz nt = bigAnd [1..nz] (\zona -> bigAnd [1..nt] (\tiempo -> noHayMasDeUnRobot nr zona tiempo))
+
+
+-- AUXILIARES
+
+-- Función para asignar un robot a una zona
+asignarRobotAUnaZona :: Nat -> (Nat -> L) -> L
+asignarRobotAUnaZona nz f = Bin (bigOr [1..nz] f) And (excluirRobotDeOtrasZonas nz f)
+
+-- Función para excluir un robot de las demás zonas
+excluirRobotDeOtrasZonas :: Nat -> (Nat -> L) -> L
+excluirRobotDeOtrasZonas nz f = bigAnd [zona1 | zona1 <- [1..nz]] (\zona1 -> excluirRobotDeZonasRestantes nz f zona1)
+
+-- Función auxiliar para excluir un robot de las zonas restantes y acortar excluirRobotDeOtrasZonas
+excluirRobotDeZonasRestantes :: Nat -> (Nat -> L) -> Nat -> L
+excluirRobotDeZonasRestantes nz f zona1 = bigAnd [zona2 | zona2 <- [1..nz], zona2 > zona1] (\zona2 -> Bin (Neg (f zona1)) Or (Neg (f zona2)))
+
+-- Función para verificar que no hay más de un robot en una zona y tiempo específicos
+noHayMasDeUnRobot :: Nat -> Nat -> Nat -> L
+noHayMasDeUnRobot nr zona tiempo = bigAnd [1..nr] (\robot1 -> verificarUnicidadDeRobotEnZonaYTiempo nr zona tiempo robot1)
+
+-- Función para asegurar que no haya más de un robot en una zona y tiempo específicos
+verificarUnicidadDeRobotEnZonaYTiempo :: Nat -> Nat -> Nat -> Nat -> L
+verificarUnicidadDeRobotEnZonaYTiempo nr zona tiempo robot1 = bigAnd [robot2 | robot2 <- [1..nr], robot2 /= robot1] (\robot2 -> Bin (Neg (v3 "p" robot1 zona tiempo)) Or (Neg (v3 "p" robot2 zona tiempo)))
+
+
 -- 2.4)
 -- Graficar solución en la imagen planAB.png.
+
+-- El resultado esta en el archivo planAB.jpeg. Como hay mas zonas que robots, la zona 4 quedo sin ser vigilada.
+
+-- El resultado de la grafica esta en el archivo planAB.jpeg.
+-- En el archivo planAB.smt se encuentra el smt que se subio a CVC5 para encontrar el modelo de planAB 3 4 5.
+-- El modelo encontrado esta en el archivo planAB_output.smt.
+
 
 -- 2.5)
 -- Pre: recibe
@@ -146,12 +162,8 @@ planAB nr nz nt = Bin (condA nr nz nt) And (condB nr nz nt)
 -- Paso 3: Formalizar la asignación de robots a zonas en una fórmula de LP en planABC
 
 planABC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
-planABC nr nz nt ir iz = Bin (Bin (condA nr nz nt) And (condB nr nz nt)) And (condC nr nz nt (sortTuple ir) (sortTuple iz))
+planABC nr nz nt ir iz = Bin (Bin (condA nr nz nt) And (condB nr nz nt)) And (condC nr nz nt (ordenarListaDePares ir) (ordenarListaDePares iz))
 
--- Ordena de forma descendente por importancia o rendimiento. 
-sortTuple :: [(Nat,Nat)] -> [(Nat,Nat)]
-sortTuple [] = []
-sortTuple (x:xs) = sortBy (\(_,a) (_,b) -> compare b a) (x:xs)
 
 -- Condicion C: Asignar robots a zonas de acuerdo a su rendimiento e importancia. 
 -- ir y iz son listas de tuplas (Nat,Nat) donde el primer elemento es el índice del robot/zona y el segundo elemento es el rendimiento/importancia, y
@@ -160,6 +172,15 @@ condC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
 condC nr nz nt ir iz = bigAnd [1..nt] $ \k -> bigAnd [1..min nr nz] $ \n -> let (i, _) = ir !! (n - 1)
                                                                                 (j, _) = iz !! (n - 1)
                                                                             in v3 "p" i j k
+                                                                            
+                                                                   
+-- AUXILIARES
+                                                                   
+-- Ordena de forma descendente por importancia o rendimiento. 
+ordenarListaDePares :: [(Nat,Nat)] -> [(Nat,Nat)]
+ordenarListaDePares [] = []
+ordenarListaDePares (x:xs) = sortBy (\(_,a) (_,b) -> compare b a) (x:xs)
+
 
 -- 2.6)
 -- Información de rendimiento:
@@ -171,6 +192,10 @@ infoZonas :: [(Nat,Nat)]
 infoZonas = [(1, 100), (2, 230), (3, 100)]
 
 -- Graficar solución en la imagen planABC.png.
+
+-- El resultado de la grafica esta en el archivo planABC.jpeg.
+-- En el archivo planABC.smt se encuentra el smt que se subio a CVC5 para encontrar el modelo de planABC 3 3 5 infoRobots infoZonas.
+-- El modelo encontrado esta en el archivo planABC_output.smt.
 
 
 ----------------------------------------------------------------------------------
