@@ -73,37 +73,31 @@ diceCej3 = Bin c Iff (Neg b)
 --Ejecutando modelos ej3, una interpretacion posible es:
 --[("b", False), ("c", True), ("a", True)] 
 --A y C son caballeros; B es escudero y miente sobre lo que A dijo.
- 
+
 ----------------------------------------------------------------------------------
 -- 2. Planificación de vigilancia
 ----------------------------------------------------------------------------------
 
+-- Para garantizar la seguridad en grandes espacios de manera eficiente han surgido sistemas de vigilancia auto ́nomos con los cuales vigilantes de seguridad robotizados (de aqu ́ı en m ́as, robots) se ocupan de la proteccio ́n perimetral patrullando sin ayuda humana y detectando objetos, actividades o incluso temperat- uras an ́omalas.2 La efectividad de estos sistemas de vigilancia depende, en parte, de una planificaci ́on apropiada entre los distintos robots disponibles y las distintas zonas a vigilar.
+-- En este ejercicio nos interesa modelar los posibles escenarios de un sistema de vigilancia que consiste en r robots, z zonas de vigilancia y t franjas temporales. Dichos valores conforman los para ́metros del problema. Por ejemplo, si tenemos r = 2, z = 2 y t = 4, las figuras 1 y 2 nos muestran dos de las posibles planificaciones de vigilancia en la cual se cumplen las siguientes condiciones obviamente deseables:
+-- A. Todo robot en cualquier momento vigila alguna zona. B. Nunca asignamos m ́as de un robot en la misma zona.
+
 -- 2.1) Respuesta: ...
 
--- i) r > z
+-- i)
 -- No. No es posible realizar una planificación básica con más robots que zonas de vigilancia. 
--- Una planificación básica requiere que cada robot vigile exactamente una zona de vigilancia en una franja temporal. 
--- Si hay más robots que zonas de vigilancia, habrá robots que no tengan zonas asignadas, o robots que tengan más de 
--- una zona asignada en una franja temporal, lo cual no es posible en una planificación básica.
+-- Una planificación básica requiere que cada robot vigile exactamente una zona de vigilancia en una franja temporal. Si hay más robots que zonas de vigilancia,
+-- habrá robots que no tengan zonas asignadas, o robots que tengan más de una zona asignada en una franja temporal, lo cual no es posible en una planificación básica.
 
--- CONFLICTO:
--- Si hay más robots que zonas de vigilancia, habrá robots que no tengan zonas asignadas, o robots que tengan más de una zona asignada en una misma franja temporal.
--- Por lo tanto, o bien 2.1) ii) es verdadera y 2.2) es falsa, o 2.1) ii) es falsa y 2.2) es verdadera. 
--- La letra no me da suficiente información... Sin embargo, si no pueden haber zonas sin robots asignados, entonces planAB 3 4 5 es insatisfacible! 
--- Esto no tiene mucho sentido porque en el ejercicio 2.4 me piden que grafique la solución de planAB 3 4 5, lo cual no sería posible si es insatisfacible, o sea,
--- no habría nada para graficar....
-
-
--- (REVISAR)
--- ii) r < z
+-- ii)
 -- Sí. Es posible realizar una planificación básica con más zonas de vigilancia que robots.
 -- En una planificación básica, cada robot debe vigilar una zona de vigilancia. Si hay más zonas de vigilancia que robots,
--- habrá robots vigilando más de una zona de vigilancia en una misma franja temporal. (REVISAR)
+-- habrá zonas de vigilancia sin robots asignados, lo cual es posible en una planificación básica.
 
 -- 2.2) Respuesta: ...
 
--- La letra no me da suficiente información... Si un robot es físicamente capaz de vigilar más de una zona de vigilancia en una misma franja temporal,
--- entonces la afirmación es verdadera. De lo contrario, es falsa. (REVISAR)
+-- No es posible que un robot vigile más de una zona en una misma franja temporal. Esto se debe a que en una planificación básica, cada robot debe vigilar
+-- una zona de vigilancia. 
 
 -- 2.3)
 -- Pre: recibe 
@@ -112,24 +106,27 @@ diceCej3 = Bin c Iff (Neg b)
 --        nt - número de franjas temporales
 -- Pos: retorna una fórmula de LP formalizando el problema de planificacion básica.
 
--- Condicion A: Todo robot en cualquier momento vigila alguna zona.
+-- Condicion A: Todo robot en cualquier momento vigila una y solo una zona.
 condA :: Nat -> Nat -> Nat -> L
-condA nr nz nt = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [k | k <- [1..nt]] (\k -> bigOr [j | j <- [1..nz]] (\j -> v3 "p" i j k)))
+condA nr nz nt = bigAnd [1..nr] (\robot -> bigAnd [1..nt] (\tiempo -> aplicarEnUnaUnicaZona nz (\zona -> v3 "p" robot zona tiempo)))
+
+aplicarEnUnaUnicaZona :: Nat -> (Nat -> L) -> L
+aplicarEnUnaUnicaZona nz f = Bin (bigOr [1..nz] f) And (bigAnd [zona1 | zona1 <- [1..nz]] (\zona1 -> bigAnd [zona2 | zona2 <- [1..nz], zona2 > zona1] (\zona2 -> Bin (Neg (f zona1)) Or (Neg (f zona2)))))
+
 
 -- Condicion B: No existe más de un robot en la misma zona en una misma franja temporal.
 condB :: Nat -> Nat -> Nat -> L
-condB nr nz nt = bigAnd [j | j <- [1..nz]] (\j -> bigAnd [k | k <- [1..nt]] (\k -> bigOr [i | i <- [1..nr]] (\i -> bigOr [l | l <- [1..nr], l /= i] (\l -> Bin (Neg (v3 "p" i j k)) And (Neg (v3 "p" l j k))))))
+condB nr nz nt = bigAnd [1..nz] (\zona -> bigAnd [1..nt] (\tiempo -> noHayMasDeUnRobot nr zona tiempo))
 
--- Condicion extra: Un robot solo puede vigilar una zona en una franja temporal. Esto podemos usarlo si vemos que al final un robot NO puede
--- vigilar más de una zona en una misma franja temporal... Pero agregar esta condición a planAB hace que el ejercicio 2.4 no tenga sentido
--- porque planAB 3 4 5 sería insatisfacible... (REVISAR)
--- condExtra :: Nat -> Nat -> Nat -> L
--- condExtra nr nz nt = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [j | j <- [1..nz]] (\j -> bigAnd [k | k <- [1..nt]] (\k -> bigAnd [l | l <- [1..nt], l /= k] (\l -> Bin (Neg (v3 "p" i j k)) And (Neg (v3 "p" i j l))))))
+noHayMasDeUnRobot :: Nat -> Nat -> Nat -> L
+noHayMasDeUnRobot nr zona tiempo = 
+    bigAnd [1..nr] (\robot1 -> 
+    bigAnd [robot2 | robot2 <- [1..nr], robot2 /= robot1] (\robot2 -> 
+    Bin (Neg (v3 "p" robot1 zona tiempo)) Or (Neg (v3 "p" robot2 zona tiempo))
+    ))
 
 planAB :: Nat -> Nat -> Nat -> L
 planAB nr nz nt = Bin (condA nr nz nt) And (condB nr nz nt)
-
-
 
 -- 2.4)
 -- Graficar solución en la imagen planAB.png.
@@ -160,7 +157,6 @@ sortTuple (x:xs) = sortBy (\(_,a) (_,b) -> compare b a) (x:xs)
 -- ir y iz son listas de tuplas (Nat,Nat) donde el primer elemento es el índice del robot/zona y el segundo elemento es el rendimiento/importancia, y
 -- están ordenadas de forma descendente por rendimiento/importancia.
 condC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
-
 condC nr nz nt ir iz = bigAnd [1..nt] $ \k -> bigAnd [1..min nr nz] $ \n -> let (i, _) = ir !! (n - 1)
                                                                                 (j, _) = iz !! (n - 1)
                                                                             in v3 "p" i j k
@@ -212,15 +208,20 @@ maxkClique g@(n,e) k = undefined
 ----------------------------------------------------------------------------------
 -- Funciones sugeridas
 ----------------------------------------------------------------------------------
+taut = Bin (Neg (V "p")) Or (V "p")
+cont = Bin (Neg (V "p") ) And (V "p")
+
 
 -- Conjuntoria (universal finito) de fórmulas indexadas
 bigAnd :: [Int] -> (Int -> L) -> L
+bigAnd [] f =  taut
 bigAnd [i] f = f i
 bigAnd (i:is) f = Bin (f i) And (bigAnd is f)
--- Recibe una lista de Int, una funcion de Int a L, 
+
 
 -- Disyuntoria (existencial finito) de fórmulas indexadas
 bigOr :: [Int] -> (Int -> L) -> L
+bigOr [] f =  cont
 bigOr [i] f = f i
 bigOr (i:is) f = Bin (f i) Or (bigOr is f)
 
@@ -231,7 +232,6 @@ v p i = V (p ++ show i)
 -- Variable proposicional triplemente indexada
 v3 :: Var -> Nat -> Nat -> Nat -> L
 v3 p i j k = V (p ++ show i ++ "_" ++ show j ++ "_" ++ show k)
-
 
 ----------------------------------------------------------------------------------
 -- Algunas funciones auxiliares 
