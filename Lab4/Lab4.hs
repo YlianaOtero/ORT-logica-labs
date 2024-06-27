@@ -207,17 +207,16 @@ type G = (Nat, [(Nat,Nat)])
 -- 3.1)
 -- Pre: recibe un grafo no dirigido g y un tamaño de clique k
 -- Pos: retorna una fórmula de LP formalizando el problema del k-clique 
--- Genera una variable proposicional para cada vértice
-estaEnClique :: Nat -> L
-estaEnClique i = v "estaEnClique" i
-
--- Genera la fórmula para el k-Clique
 kClique :: G -> Nat -> L
 kClique g@(n, e) k = Bin tamanio And completo
   where
     vertices = [1..n]
     tamanio = contarExactamenteK vertices k
     completo = generarCompleto vertices e
+
+-- Genera una variable proposicional para cada vértice
+estaEnClique :: Nat -> L
+estaEnClique i = v "estaEnClique" i
 
 -- Contar exactamente k vértices seleccionados usando bigOr
 contarExactamenteK :: [Nat] -> Nat -> L
@@ -260,7 +259,6 @@ g8 = (8, [(1,3),(1,4),(1,5),(1,6),(1,7),(2,3),(2,4),(2,5),(2,6),(2,7),(3,4),(3,5
 -- 3Clique1.smt
 -- 2, 3, 4
 
--- REVISAR, CAMBIO G8
 -- 3Clique2.smt --Excluyo a mano el resultado del anterior para que no se repita
 -- 3, 4, 5
 
@@ -277,11 +275,22 @@ g8 = (8, [(1,3),(1,4),(1,5),(1,6),(1,7),(2,3),(2,4),(2,5),(2,6),(2,7),(3,4),(3,5
 -- Pre: recibe un grafo no dirigido g y un tamaño de clique k
 -- Pos: retorna una fórmula de LP formalizando el problema del k-clique maximal
 maxkClique :: G -> Nat -> L
-maxkClique g@(n,e) k = undefined
+maxkClique g@(n,e) k = Bin kCliqueFormula And maximalFormula
+  where
+    kCliqueFormula = kClique g k --Se la fórmula que asegura la existencia de un k-clique en el grafo
+    vertices = [1..n]
+
+    maximalFormula = bigAnd vertices $ \i ->
+      Bin (Neg (estaEnClique i)) Imp (bigOr vertices $ \j ->
+        Bin (estaEnClique j) And (existeArista i j e))
 
 -- 3.5) 
--- 
+-- Comandos usados:
+-- let formula = maxkClique g8 4
+-- let smtLibFormula = toPrefix formula
+-- putStrLn smtLibFormula
 
+--2,5,6,7 devuelve al ejecutar el CVC5
 
 ----------------------------------------------------------------------------------
 -- Funciones sugeridas
