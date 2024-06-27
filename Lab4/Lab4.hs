@@ -13,6 +13,8 @@ type Nat = Int
 ----------------------------------------------------------------------------------
 -- 1. Veraces y mentirosos
 ----------------------------------------------------------------------------------
+-- OBSERVACION: para poder hacer este ejercicio, tuvimos que corregir algunos errores que encontramos en el Lab3.
+-- En esta entrega se adjunta tambien nuestro Lab3 con dichas correcciones.
 
 -- Variables proposicionales:
 -- ...
@@ -73,37 +75,26 @@ diceCej3 = Bin c Iff (Neg b)
 --Ejecutando modelos ej3, una interpretacion posible es:
 --[("b", False), ("c", True), ("a", True)] 
 --A y C son caballeros; B es escudero y miente sobre lo que A dijo.
- 
+
 ----------------------------------------------------------------------------------
 -- 2. Planificación de vigilancia
 ----------------------------------------------------------------------------------
+-- 2.1) Respuestas: ...
 
--- 2.1) Respuesta: ...
-
--- i) r > z
+-- i)
 -- No. No es posible realizar una planificación básica con más robots que zonas de vigilancia. 
--- Una planificación básica requiere que cada robot vigile exactamente una zona de vigilancia en una franja temporal. 
--- Si hay más robots que zonas de vigilancia, habrá robots que no tengan zonas asignadas, o robots que tengan más de 
--- una zona asignada en una franja temporal, lo cual no es posible en una planificación básica.
+-- Una planificación básica requiere que cada robot vigile exactamente una zona de vigilancia en una franja temporal. Si hay más robots que zonas de vigilancia,
+-- habrá robots que no tengan zonas asignadas, o robots que tengan más de una zona asignada en una franja temporal, lo cual no es posible en una planificación básica.
 
--- CONFLICTO:
--- Si hay más robots que zonas de vigilancia, habrá robots que no tengan zonas asignadas, o robots que tengan más de una zona asignada en una misma franja temporal.
--- Por lo tanto, o bien 2.1) ii) es verdadera y 2.2) es falsa, o 2.1) ii) es falsa y 2.2) es verdadera. 
--- La letra no me da suficiente información... Sin embargo, si no pueden haber zonas sin robots asignados, entonces planAB 3 4 5 es insatisfacible! 
--- Esto no tiene mucho sentido porque en el ejercicio 2.4 me piden que grafique la solución de planAB 3 4 5, lo cual no sería posible si es insatisfacible, o sea,
--- no habría nada para graficar....
-
-
--- (REVISAR)
--- ii) r < z
+-- ii)
 -- Sí. Es posible realizar una planificación básica con más zonas de vigilancia que robots.
 -- En una planificación básica, cada robot debe vigilar una zona de vigilancia. Si hay más zonas de vigilancia que robots,
--- habrá robots vigilando más de una zona de vigilancia en una misma franja temporal. (REVISAR)
+-- habrá zonas de vigilancia sin robots asignados, lo cual es posible en una planificación básica.
 
 -- 2.2) Respuesta: ...
 
--- La letra no me da suficiente información... Si un robot es físicamente capaz de vigilar más de una zona de vigilancia en una misma franja temporal,
--- entonces la afirmación es verdadera. De lo contrario, es falsa. (REVISAR)
+-- No es posible que un robot vigile más de una zona en una misma franja temporal. Esto se debe a que en una planificación básica, cada robot debe vigilar
+-- una zona de vigilancia. 
 
 -- 2.3)
 -- Pre: recibe 
@@ -111,28 +102,50 @@ diceCej3 = Bin c Iff (Neg b)
 --        nz - número de zonas de vigilancia
 --        nt - número de franjas temporales
 -- Pos: retorna una fórmula de LP formalizando el problema de planificacion básica.
-
--- Condicion A: Todo robot en cualquier momento vigila alguna zona.
-condA :: Nat -> Nat -> Nat -> L
-condA nr nz nt = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [k | k <- [1..nt]] (\k -> bigOr [j | j <- [1..nz]] (\j -> v3 "p" i j k)))
-
--- Condicion B: No existe más de un robot en la misma zona en una misma franja temporal.
-condB :: Nat -> Nat -> Nat -> L
-condB nr nz nt = bigAnd [j | j <- [1..nz]] (\j -> bigAnd [k | k <- [1..nt]] (\k -> bigOr [i | i <- [1..nr]] (\i -> bigOr [l | l <- [1..nr], l /= i] (\l -> Bin (Neg (v3 "p" i j k)) And (Neg (v3 "p" l j k))))))
-
--- Condicion extra: Un robot solo puede vigilar una zona en una franja temporal. Esto podemos usarlo si vemos que al final un robot NO puede
--- vigilar más de una zona en una misma franja temporal... Pero agregar esta condición a planAB hace que el ejercicio 2.4 no tenga sentido
--- porque planAB 3 4 5 sería insatisfacible... (REVISAR)
--- condExtra :: Nat -> Nat -> Nat -> L
--- condExtra nr nz nt = bigAnd [i | i <- [1..nr]] (\i -> bigAnd [j | j <- [1..nz]] (\j -> bigAnd [k | k <- [1..nt]] (\k -> bigAnd [l | l <- [1..nt], l /= k] (\l -> Bin (Neg (v3 "p" i j k)) And (Neg (v3 "p" i j l))))))
-
 planAB :: Nat -> Nat -> Nat -> L
 planAB nr nz nt = Bin (condA nr nz nt) And (condB nr nz nt)
 
+-- Condición A: Todo robot en cualquier momento vigila una y solo una zona.
+condA :: Nat -> Nat -> Nat -> L
+condA nr nz nt = bigAnd [1..nr] (\robot -> bigAnd [1..nt] (\tiempo -> asignarRobotAUnaZona nz (\zona -> v3 "p" robot zona tiempo)))
+
+-- Condición B: No existe más de un robot en la misma zona en una misma franja temporal.
+condB :: Nat -> Nat -> Nat -> L
+condB nr nz nt = bigAnd [1..nz] (\zona -> bigAnd [1..nt] (\tiempo -> noHayMasDeUnRobot nr zona tiempo))
+
+
+-- AUXILIARES
+
+-- Función para asignar un robot a una zona
+asignarRobotAUnaZona :: Nat -> (Nat -> L) -> L
+asignarRobotAUnaZona nz f = Bin (bigOr [1..nz] f) And (excluirRobotDeOtrasZonas nz f)
+
+-- Función para excluir un robot de las demás zonas
+excluirRobotDeOtrasZonas :: Nat -> (Nat -> L) -> L
+excluirRobotDeOtrasZonas nz f = bigAnd [zona1 | zona1 <- [1..nz]] (\zona1 -> excluirRobotDeZonasRestantes nz f zona1)
+
+-- Función auxiliar para excluir un robot de las zonas restantes y acortar excluirRobotDeOtrasZonas
+excluirRobotDeZonasRestantes :: Nat -> (Nat -> L) -> Nat -> L
+excluirRobotDeZonasRestantes nz f zona1 = bigAnd [zona2 | zona2 <- [1..nz], zona2 > zona1] (\zona2 -> Bin (Neg (f zona1)) Or (Neg (f zona2)))
+
+-- Función para verificar que no hay más de un robot en una zona y tiempo específicos
+noHayMasDeUnRobot :: Nat -> Nat -> Nat -> L
+noHayMasDeUnRobot nr zona tiempo = bigAnd [1..nr] (\robot1 -> verificarUnicidadDeRobotEnZonaYTiempo nr zona tiempo robot1)
+
+-- Función para asegurar que no haya más de un robot en una zona y tiempo específicos
+verificarUnicidadDeRobotEnZonaYTiempo :: Nat -> Nat -> Nat -> Nat -> L
+verificarUnicidadDeRobotEnZonaYTiempo nr zona tiempo robot1 = bigAnd [robot2 | robot2 <- [1..nr], robot2 /= robot1] (\robot2 -> Bin (Neg (v3 "p" robot1 zona tiempo)) Or (Neg (v3 "p" robot2 zona tiempo)))
 
 
 -- 2.4)
 -- Graficar solución en la imagen planAB.png.
+
+-- El resultado esta en el archivo planAB.jpeg. Como hay mas zonas que robots, la zona 4 quedo sin ser vigilada.
+
+-- El resultado de la grafica esta en el archivo planAB.jpeg.
+-- En el archivo planAB.smt se encuentra el smt que se subio a CVC5 para encontrar el modelo de planAB 3 4 5.
+-- El modelo encontrado esta en el archivo planAB_output.smt.
+
 
 -- 2.5)
 -- Pre: recibe
@@ -149,21 +162,25 @@ planAB nr nz nt = Bin (condA nr nz nt) And (condB nr nz nt)
 -- Paso 3: Formalizar la asignación de robots a zonas en una fórmula de LP en planABC
 
 planABC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
-planABC nr nz nt ir iz = Bin (Bin (condA nr nz nt) And (condB nr nz nt)) And (condC nr nz nt (sortTuple ir) (sortTuple iz))
+planABC nr nz nt ir iz = Bin (Bin (condA nr nz nt) And (condB nr nz nt)) And (condC nr nz nt (ordenarListaDePares ir) (ordenarListaDePares iz))
 
--- Ordena de forma descendente por importancia o rendimiento. 
-sortTuple :: [(Nat,Nat)] -> [(Nat,Nat)]
-sortTuple [] = []
-sortTuple (x:xs) = sortBy (\(_,a) (_,b) -> compare b a) (x:xs)
 
 -- Condicion C: Asignar robots a zonas de acuerdo a su rendimiento e importancia. 
 -- ir y iz son listas de tuplas (Nat,Nat) donde el primer elemento es el índice del robot/zona y el segundo elemento es el rendimiento/importancia, y
 -- están ordenadas de forma descendente por rendimiento/importancia.
 condC :: Nat -> Nat -> Nat -> [(Nat,Nat)] -> [(Nat,Nat)] -> L
-
 condC nr nz nt ir iz = bigAnd [1..nt] $ \k -> bigAnd [1..min nr nz] $ \n -> let (i, _) = ir !! (n - 1)
                                                                                 (j, _) = iz !! (n - 1)
                                                                             in v3 "p" i j k
+                                                                            
+                                                                   
+-- AUXILIARES
+                                                                   
+-- Ordena de forma descendente por importancia o rendimiento. 
+ordenarListaDePares :: [(Nat,Nat)] -> [(Nat,Nat)]
+ordenarListaDePares [] = []
+ordenarListaDePares (x:xs) = sortBy (\(_,a) (_,b) -> compare b a) (x:xs)
+
 
 -- 2.6)
 -- Información de rendimiento:
@@ -175,6 +192,10 @@ infoZonas :: [(Nat,Nat)]
 infoZonas = [(1, 100), (2, 230), (3, 100)]
 
 -- Graficar solución en la imagen planABC.png.
+
+-- El resultado de la grafica esta en el archivo planABC.jpeg.
+-- En el archivo planABC.smt se encuentra el smt que se subio a CVC5 para encontrar el modelo de planABC 3 3 5 infoRobots infoZonas.
+-- El modelo encontrado esta en el archivo planABC_output.smt.
 
 
 ----------------------------------------------------------------------------------
@@ -265,15 +286,20 @@ maxkClique g@(n,e) k = undefined
 ----------------------------------------------------------------------------------
 -- Funciones sugeridas
 ----------------------------------------------------------------------------------
+taut = Bin (Neg (V "p")) Or (V "p")
+cont = Bin (Neg (V "p") ) And (V "p")
+
 
 -- Conjuntoria (universal finito) de fórmulas indexadas
 bigAnd :: [Int] -> (Int -> L) -> L
+bigAnd [] f =  taut
 bigAnd [i] f = f i
 bigAnd (i:is) f = Bin (f i) And (bigAnd is f)
--- Recibe una lista de Int, una funcion de Int a L, 
+
 
 -- Disyuntoria (existencial finito) de fórmulas indexadas
 bigOr :: [Int] -> (Int -> L) -> L
+bigOr [] f =  cont
 bigOr [i] f = f i
 bigOr (i:is) f = Bin (f i) Or (bigOr is f)
 
@@ -284,7 +310,6 @@ v p i = V (p ++ show i)
 -- Variable proposicional triplemente indexada
 v3 :: Var -> Nat -> Nat -> Nat -> L
 v3 p i j k = V (p ++ show i ++ "_" ++ show j ++ "_" ++ show k)
-
 
 ----------------------------------------------------------------------------------
 -- Algunas funciones auxiliares 
