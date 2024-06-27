@@ -4,13 +4,22 @@
 (set-option :produce-models true)
 
 (declare-fun p () Bool)
-; declarar variables aquí
-
+(declare-fun estaEnClique1 () Bool)
+(declare-fun estaEnClique2 () Bool)
+(declare-fun estaEnClique3 () Bool)
+(declare-fun estaEnClique4 () Bool)
+(declare-fun estaEnClique5 () Bool)
+(declare-fun estaEnClique6 () Bool)
+(declare-fun estaEnClique7 () Bool)
+(declare-fun estaEnClique8 () Bool)
+; 
 
 (define-fun formula () Bool
-  ; insertar formalización aquí
+(and (or (and estaEnClique1 (and estaEnClique2 estaEnClique3)) (or (and estaEnClique1 (and estaEnClique2 estaEnClique4)) (or (and estaEnClique1 (and estaEnClique3 estaEnClique4)) (or (and estaEnClique2 (and estaEnClique3 estaEnClique4)) 
+(or (and estaEnClique1 (and estaEnClique2 estaEnClique5)) (or (and estaEnClique1 (and estaEnClique3 estaEnClique5)) (or (and estaEnClique2 (and estaEnClique3 estaEnClique5)) (or (and estaEnClique1 (and estaEnClique4 estaEnClique5)) (or (and estaEnClique2 (and estaEnClique4 estaEnClique5)) (or (and estaEnClique3 (and estaEnClique4 estaEnClique5)) (or (and estaEnClique1 (and estaEnClique2 estaEnClique6)) (or (and estaEnClique1 (and estaEnClique3 estaEnClique6)) (or (and estaEnClique2 (and estaEnClique3 estaEnClique6)) (or (and estaEnClique1 (and estaEnClique4 estaEnClique6)) (or (and estaEnClique2 (and estaEnClique4 estaEnClique6)) (or (and estaEnClique3 (and estaEnClique4 estaEnClique6)) (or (and estaEnClique1 (and estaEnClique5 estaEnClique6)) (or (and estaEnClique2 (and estaEnClique5 estaEnClique6)) (or (and estaEnClique3 (and estaEnClique5 estaEnClique6)) (or (and estaEnClique4 (and estaEnClique5 estaEnClique6)) (or (and estaEnClique1 (and estaEnClique2 estaEnClique7)) (or (and estaEnClique1 (and estaEnClique3 estaEnClique7)) (or (and estaEnClique2 (and estaEnClique3 estaEnClique7)) (or (and estaEnClique1 (and estaEnClique4 estaEnClique7)) (or (and estaEnClique2 (and estaEnClique4 estaEnClique7)) (or (and estaEnClique3 (and estaEnClique4 estaEnClique7)) (or (and estaEnClique1 (and estaEnClique5 estaEnClique7)) (or (and estaEnClique2 (and estaEnClique5 estaEnClique7)) (or (and estaEnClique3 (and estaEnClique5 estaEnClique7)) (or (and estaEnClique4 (and estaEnClique5 estaEnClique7)) (or (and estaEnClique1 (and estaEnClique6 estaEnClique7)) (or (and estaEnClique2 (and estaEnClique6 estaEnClique7)) (or (and estaEnClique3 (and estaEnClique6 estaEnClique7)) (or (and estaEnClique4 (and estaEnClique6 estaEnClique7)) (or (and estaEnClique5 (and estaEnClique6 estaEnClique7)) (or (and estaEnClique1 (and estaEnClique2 estaEnClique8)) (or (and estaEnClique1 (and estaEnClique3 estaEnClique8)) (or (and estaEnClique2 (and estaEnClique3 estaEnClique8)) (or (and estaEnClique1 (and estaEnClique4 estaEnClique8)) (or (and estaEnClique2 (and estaEnClique4 estaEnClique8)) (or (and estaEnClique3 (and estaEnClique4 estaEnClique8)) (or (and estaEnClique1 (and estaEnClique5 estaEnClique8)) (or (and estaEnClique2 (and estaEnClique5 estaEnClique8)) (or (and estaEnClique3 (and estaEnClique5 estaEnClique8)) (or (and estaEnClique4 (and estaEnClique5 estaEnClique8)) (or (and estaEnClique1 (and estaEnClique6 estaEnClique8)) (or (and estaEnClique2 (and estaEnClique6 estaEnClique8)) (or (and estaEnClique3 (and estaEnClique6 estaEnClique8)) (or (and estaEnClique4 (and estaEnClique6 estaEnClique8)) (or (and estaEnClique5 (and estaEnClique6 estaEnClique8)) (or (and estaEnClique1 (and estaEnClique7 estaEnClique8)) (or (and estaEnClique2 (and estaEnClique7 estaEnClique8)) (or (and estaEnClique3 (and estaEnClique7 estaEnClique8)) (or (and estaEnClique4 (and estaEnClique7 estaEnClique8)) (or (and estaEnClique5 (and estaEnClique7 estaEnClique8)) (and estaEnClique6 (and estaEnClique7 estaEnClique8))))))))))))))))))))))))))))))))))))))))))))))))))))))))) (and (=> (and 
+estaEnClique1 estaEnClique2) false) (and (=> (and estaEnClique1 estaEnClique3) true) (and (=> (and estaEnClique1 estaEnClique4) true) (and (=> (and estaEnClique1 estaEnClique5) true) (and (=> (and estaEnClique1 estaEnClique6) true) (and 
+(=> (and estaEnClique1 estaEnClique7) true) (and (=> (and estaEnClique1 estaEnClique8) false) (and (=> (and estaEnClique2 estaEnClique3) true) (and (=> (and estaEnClique2 estaEnClique4) true) (and (=> (and estaEnClique2 estaEnClique5) true) (and (=> (and estaEnClique2 estaEnClique6) true) (and (=> (and estaEnClique2 estaEnClique7) true) (and (=> (and estaEnClique2 estaEnClique8) false) (and (=> (and estaEnClique3 estaEnClique4) true) (and (=> (and estaEnClique3 estaEnClique5) true) (and (=> (and estaEnClique3 estaEnClique6) true) (and (=> (and estaEnClique3 estaEnClique7) true) (and (=> (and estaEnClique3 estaEnClique8) false) (and (=> (and estaEnClique4 estaEnClique5) true) (and (=> (and estaEnClique4 estaEnClique6) true) (and (=> (and estaEnClique4 estaEnClique7) true) (and (=> (and estaEnClique4 estaEnClique8) false) (and (=> (and estaEnClique5 estaEnClique6) true) (and (=> (and estaEnClique5 estaEnClique7) true) (and (=> (and estaEnClique5 estaEnClique8) false) (and (=> (and estaEnClique6 estaEnClique7) true) (and (=> (and estaEnClique6 estaEnClique8) false) (=> (and estaEnClique7 estaEnClique8) true)))))))))))))))))))))))))))))
 )
-
 
 (assert formula)
 (check-sat)
