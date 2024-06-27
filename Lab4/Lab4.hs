@@ -3,8 +3,8 @@
 -- Números: 301178, 283473
 ----------------------------------------------------
 
-import Prelude
-import Data.List
+import Prelude --concatMap, elem, filter, fromIntegral
+import Data.List --subsequences
 import Lab3
 import qualified Data.Bits as B
 
@@ -183,21 +183,74 @@ infoZonas = [(1, 100), (2, 230), (3, 100)]
 
 type G = (Nat, [(Nat,Nat)])
 
-
 -- 3.1)
 -- Pre: recibe un grafo no dirigido g y un tamaño de clique k
 -- Pos: retorna una fórmula de LP formalizando el problema del k-clique 
+-- Genera una variable proposicional para cada vértice
+estaEnClique :: Nat -> L
+estaEnClique i = v "estaEnClique" i
+
+-- Genera la fórmula para el k-Clique
 kClique :: G -> Nat -> L
-kClique g@(n,e) k = undefined
+kClique g@(n, e) k = Bin tamanio And completo
+  where
+    vertices = [1..n]
+    tamanio = contarExactamenteK vertices k
+    completo = generarCompleto vertices e
+
+-- Contar exactamente k vértices seleccionados usando bigOr
+contarExactamenteK :: [Nat] -> Nat -> L
+contarExactamenteK vertices k =
+    bigOr [1..length combinacionesConK] (\i -> bigAnd (combinacionesConK !! (i - 1)) estaEnClique)
+  where
+    combinacionesConK :: [[Nat]]
+    combinacionesConK = combinaciones vertices k
+
+-- Función para generar la parte de 'completo' de la fórmula
+generarCompleto :: [Nat] -> [(Nat, Nat)] -> L
+generarCompleto vertices edges =
+    bigAnd [1..length pares] (\i -> let (i', j') = pares !! (i - 1) in Bin (Bin (estaEnClique i') And (estaEnClique j')) Imp (existeArista i' j' edges))
+  where
+    pares = [(i, j) | i <- vertices, j <- vertices, i < j]
+
+-- Verifica si dos vértices están conectados
+existeArista :: Nat -> Nat -> [(Nat, Nat)] -> L
+existeArista i j edges =
+    if (i, j) `elem` edges || (j, i) `elem` edges then
+        V "true"
+    else
+        V "false"
+
+-- Función para generar combinaciones
+combinaciones :: [Nat] -> Nat -> [[Nat]]
+combinaciones ns k = filter ((== k) . length) $ subsequences ns
 
 -- 3.2)
 g8 :: G
-g8 = undefined
+g8 = (8, [(1,3),(1,4),(1,5),(1,6),(1,7),(2,3),(2,4),(2,5),(2,6),(2,7),(3,4),(3,5),(3,6),(3,7),(4,5),(4,6),(4,7),(5,6),(5,7),(6,7),(7,8)])
 
--- ... Mencionar las soluciones encontradas aquí ...
+-- Comandos utilizados y notas de recordatorio:
+-- genVars para generar las variables que representan si un vértice está incluido en el clique
+-- putStrLn $ genVars "estaEnClique" 8, para obtener las variables.
+-- let formula = kClique g8 3
+-- let formulaRes = toPrefix formula
+-- print formulaRes
+
+-- 3Clique1.smt
+-- 2, 3, 4
+
+-- REVISAR, CAMBIO G8
+-- 3Clique2.smt --Excluyo a mano el resultado del anterior para que no se repita
+-- 3, 4, 5
 
 -- 3.3)
--- ... Mencionar solución encontrada aquí ...
+
+-- Las variables son las mismas que el caso anterior.
+-- Para k = 3 es satisfacible, 2, 3, 4
+-- Para k = 4 es satisfacible, 2, 3, 4, 5
+-- Para k = 6 es sat, 2,3,4,5,6,7 -- El clique mas grande
+-- Para k = 7 es unsat.
+-- Para k = 8 es unsat.
 
 -- 3.4)
 -- Pre: recibe un grafo no dirigido g y un tamaño de clique k
@@ -206,7 +259,7 @@ maxkClique :: G -> Nat -> L
 maxkClique g@(n,e) k = undefined
 
 -- 3.5) 
--- ... Mencionar solución encontrada aquí ...
+-- 
 
 
 ----------------------------------------------------------------------------------
